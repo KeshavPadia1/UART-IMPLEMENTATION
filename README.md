@@ -1,1 +1,2 @@
 # UART (Universal Asynchronous Receiver-Transmitter)
+UART is a peripheral, point-to-point, asynchronous serial communication protocol used for device-to-device data exchange without a shared clock line. This project implements a complete UART core (Transmitter, Receiver, and Baud Rate Generator) targeting an 8E1 configuration (8 data bits, even parity, 1 stop bit), with the baud rate designed to be configurable rather than hardcoded.
