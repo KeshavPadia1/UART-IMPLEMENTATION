@@ -1,1 +1,1 @@
-# UART-IMPLEMENTATION
+# UART (Universal Asynchronous Receiver-Transmitter)
