@@ -60,8 +60,8 @@ UART/
 ## Status
 
 - [x] Baud rate generator + verification
-- [ ] Transmitter (TX) — design + simulation
-- [ ] Receiver (RX) — design + simulation
+- [x] Transmitter (TX): design + simulation
+- [ ] Receiver (RX): design + simulation
 - [ ] Parity generation (TX) and checking (RX)
 - [ ] TX/RX loopback verification
 - [ ] Top-level integration
