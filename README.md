@@ -66,3 +66,42 @@ UART/
 - [ ] TX/RX loopback verification
 - [ ] Top-level integration
 - [ ] Synthesis + Static Timing Analysis
+
+## State Transition Diagram
+
+### TX state transition diagram
+
+```
+                    ┌───────────────────────┐
+                    │       S0: IDLE         │
+                    │        TX = 1          │
+                    └───────────┬───────────┘
+                                │  TX_START = 1
+                                ▼
+                    ┌───────────────────────┐
+                    │    S1: START BIT       │
+                    │        TX = 0          │
+                    └───────────┬───────────┘
+                                │  TX_TICK
+                                ▼
+                    ┌───────────────────────┐
+              ┌────►│    S2: DATA BITS       │
+              │     │  shift out, LSB first  │
+              │     └───────────┬───────────┘
+              │                 │
+              └─────────────────┤  TX_TICK, COUNT < 8  (loops 8x)
+                                │  COUNT == 8
+                                ▼
+                    ┌───────────────────────┐
+                    │      S3: PARITY        │
+                    │   TX = parity bit      │
+                    └───────────┬───────────┘
+                                │  TX_TICK
+                                ▼
+                    ┌───────────────────────┐
+                    │     S4: STOP BIT       │
+                    │        TX = 1          │
+                    └───────────┬───────────┘
+                                │  TX_TICK
+                                └──────────────► back to S0
+```
