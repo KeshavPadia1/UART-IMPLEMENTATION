@@ -61,15 +61,13 @@ UART/
 
 - [x] Baud rate generator + verification
 - [x] Transmitter (TX): design + simulation
-- [ ] Receiver (RX): design + simulation
-- [ ] Parity generation (TX) and checking (RX)
-- [ ] TX/RX loopback verification
-- [ ] Top-level integration
+- [x] Receiver (RX): design + simulation
+- [x] Top-level integration
 - [ ] Synthesis + Static Timing Analysis
 
 ## State Transition Diagram
 
-### TX state transition diagram
+### TX State Transition Diagram
 
 ```
                     ┌───────────────────────┐
@@ -103,5 +101,42 @@ UART/
                     │        TX = 1          │
                     └───────────┬───────────┘
                                 │  TX_TICK
+                                └──────────────► back to S0
+```
+
+### RX State Transition Diagram
+
+```
+                    ┌───────────────────────┐
+                    │       S0: IDLE         │
+                    │   watch for RX == 0    │
+                    └───────────┬───────────┘
+                                │  RX == 0
+                                ▼
+                    ┌───────────────────────┐
+                    │  S1: CONFIRM START     │
+                    │ recheck RX at midpoint │
+                    └───────────┬───────────┘
+                     RX == 0 (real start) │ RX == 1 (glitch) → back to S0
+                                ▼
+                    ┌───────────────────────┐
+              ┌────►│    S2: DATA BITS       │
+              │     │  sample @ midpoint x16 │
+              │     └───────────┬───────────┘
+              │                 │
+              └─────────────────┤  tick x16, COUNT < 8  (loops 8x)
+                                │  COUNT == 8
+                                ▼
+                    ┌───────────────────────┐
+                    │      S3: PARITY        │
+                    │  compare RX vs ^SIPO   │
+                    └───────────┬───────────┘
+                                │  tick x16
+                                ▼
+                    ┌───────────────────────┐
+                    │     S4: STOP BIT       │
+                    │    check RX == 1       │
+                    └───────────┬───────────┘
+                RX == 1 → Data_Out, Done   │   RX == 0 → Frame_Error
                                 └──────────────► back to S0
 ```
