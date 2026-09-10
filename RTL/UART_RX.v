@@ -1,10 +1,10 @@
 `timescale 1ns / 1ps
 
-module UART_RX(RX,RX_TICK,CLK,RST,Data_Out,Done,Parity_Error);
+module UART_RX(RX,RX_TICK,CLK,RST,Data_Out,Done,Parity_Error,Frame_Error);
 
 input RX,RX_TICK,CLK,RST;
 output reg[7:0] Data_Out; 
-output reg Done,Parity_Error;
+output reg Done,Parity_Error,Frame_Error;
 
 reg[4:0] Bit_Count,Tick_Count;
 reg[7:0] SIPO_REG;
@@ -22,6 +22,7 @@ SIPO_REG <= 0;
 Data_Out <= 0;
 Parity_Error <= 0;
 Done <= 0;
+Frame_Error <= 0;
 end
 
 else begin
@@ -32,6 +33,7 @@ S0: begin
     SIPO_REG <= 0;
     Parity_Error <= 0;
     Done <= 0;
+    Frame_Error <= 1'b0;
     
     if(RX == 1'b0) begin
     STATE <= S1;
@@ -50,20 +52,20 @@ S1: begin
     end
     end
     else begin
-    Tick_Count = Tick_Count + 1;
+    Tick_Count <= Tick_Count + 1;
     end
     end
     end
 S2: begin
     if(RX_TICK == 1'b1) begin 
     if(Tick_Count == 15) begin
-    SIPO_REG <= {RX,SIPO_REG[7:1]};
     Tick_Count <= 0;
     if(Bit_Count == 8) begin
     STATE <= S3;
     Bit_Count <= 0;
     end 
     else begin 
+    SIPO_REG <= {RX,SIPO_REG[7:1]};
     Bit_Count <= Bit_Count + 1;
     end
     end
@@ -90,10 +92,17 @@ end
 S4: begin
     if(RX_TICK == 1'b1) begin
     if(Tick_Count == 15) begin 
+    if(RX == 1'b1) begin
     Tick_Count <= 0;
     Data_Out <= SIPO_REG;
     Done <= 1'b1;
     STATE <= S0;
+    Frame_Error <= 1'b0;
+    end
+    else begin
+    Frame_Error <= 1'b1;
+    STATE <= S0;
+    end
     end
     else begin
     Tick_Count <= Tick_Count + 1;
