@@ -62,8 +62,8 @@ UART/
 - [x] Baud rate generator + verification
 - [x] Transmitter (TX): design + simulation
 - [x] Receiver (RX): design + simulation
-- [x] Top-level integration
-- [ ] Synthesis + Static Timing Analysis
+- [x] Top-level integration + simulation
+- [x] Verification
 
 ## State Transition Diagram
 
@@ -139,4 +139,23 @@ UART/
                     └───────────┬───────────┘
                 RX == 1 → Data_Out, Done   │   RX == 0 → Frame_Error
                                 └──────────────► back to S0
+```
+
+## LoopBack Verification
+
+UART_TOP is instantiated once, with its own TX output wired directly back into its own RX input inside the testbench (assign RX = TX) - this is a test-only connection, not how the core is meant to be deployed (in real use, TX/RX connect to a separate external device's RX/TX). A byte written to DATA and triggered via TX_START is transmitted, looped back, and independently reconstructed by the receiver.
+
+```
+                    ┌───────────────────────────────────┐
+                    │              UART_TOP               │
+                    │                                     │
+  DATA[7:0] ───────►│                                     │
+  TX_START ────────►│         TX ●────────────┐           │
+                    │                          │           │
+                    │         RX ●◄────────────┘           │
+                    │                                     │
+  Data_Out, Done,  ◄│                                     │
+  Parity_Error,     │                                     │
+  Frame_Error       └───────────────────────────────────┘
+                         (testbench only: assign RX = TX;)
 ```
